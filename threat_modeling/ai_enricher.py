@@ -13,6 +13,7 @@ REPORT_CANDIDATES = [
     os.getenv("REPORT_PATH", "tm/threats.md"),
     os.path.join("pytm-output", "threats.md"),
     os.path.join("pytm-output", "tm", "threats.md"),
+    "threats.md",
 ]
 OUTPUT_PATH = "tm/threats_ai.json"
 
