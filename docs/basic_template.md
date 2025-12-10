@@ -1,12 +1,12 @@
 # Reporte de amenazas PyTM - Kultur Process
 
-{{diagram}}
+Diagrama DFD generado por PyTM: `tm/dfd.png`
 
 ## Amenazas detectadas
-{{#threats}}
-### {{threat_id}} — {{description}}
-- Target: {{target}}
-- CIA: {{CIA}}
-- Mitigación: {{mitigation}}
+{threats:repeat:
+### {{item.id}} — {{item.description}}
+- Target: {{item.target}}
+- Severidad: {{item.severity}}
+- Mitigación: {{item.mitigations}}
 
-{{/threats}}
+}
