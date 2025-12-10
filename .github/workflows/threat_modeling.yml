@@ -41,6 +41,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: pytm-output
+          path: .
 
       - name: Install deps
         run: pip install requests

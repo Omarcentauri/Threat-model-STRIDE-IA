@@ -7,15 +7,25 @@ AI_KEY = os.getenv("AI_API_KEY")
 AI_URL = os.getenv("AI_API_URL")
 MODEL_NAME = os.getenv("AI_MODEL_NAME", "gpt-4o-mini")
 
-REPORT_PATH = "tm/threats.md"
+# Paths where the PyTM report may live. Default is `tm/threats.md`, but in CI
+# the artifact can be downloaded into a nested directory.
+REPORT_CANDIDATES = [
+    os.getenv("REPORT_PATH", "tm/threats.md"),
+    os.path.join("pytm-output", "threats.md"),
+    os.path.join("pytm-output", "tm", "threats.md"),
+    "threats.md",
+]
 OUTPUT_PATH = "tm/threats_ai.json"
 
 def load_report():
-    if not os.path.exists(REPORT_PATH):
-        print("ERROR: No se encontró el reporte de PyTM.")
-        sys.exit(1)
-    with open(REPORT_PATH, "r", encoding="utf-8") as f:
-        return f.read()
+    for path in REPORT_CANDIDATES:
+        if path and os.path.exists(path):
+            with open(path, "r", encoding="utf-8") as f:
+                return f.read()
+
+    print("ERROR: No se encontró el reporte de PyTM.")
+    print("Se buscaron estas rutas:", ", ".join(REPORT_CANDIDATES))
+    sys.exit(1)
 
 def call_ai(report_text):
     if not AI_KEY or not AI_URL:
@@ -68,7 +78,19 @@ Devuelve solo este JSON válido:
     response.raise_for_status()
 
     try:
-        return json.loads(response.json()["choices"][0]["message"]["content"])
+        content = response.json()["choices"][0]["message"]["content"]
+        
+        # Extract JSON from markdown code blocks if present
+        if "```json" in content:
+            start = content.find("```json") + 7
+            end = content.find("```", start)
+            content = content[start:end].strip()
+        elif "```" in content:
+            start = content.find("```") + 3
+            end = content.find("```", start)
+            content = content[start:end].strip()
+        
+        return json.loads(content)
     except Exception as e:
         print("ERROR: La IA no devolvió JSON válido.")
         print(response.text)

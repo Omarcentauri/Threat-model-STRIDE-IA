@@ -34,7 +34,7 @@ db = Datastore("DB MySQL (kultur_process)")
 db.inBoundary = api_boundary
 db.isSql = True
 db.storesPersonalData = True
-db.isEncrypted = True
+db.isEncrypted = False
 
 s3 = Datastore("S3 Storage (evidencias, reportes)")
 s3.inBoundary = api_boundary
