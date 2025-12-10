@@ -78,7 +78,19 @@ Devuelve solo este JSON válido:
     response.raise_for_status()
 
     try:
-        return json.loads(response.json()["choices"][0]["message"]["content"])
+        content = response.json()["choices"][0]["message"]["content"]
+        
+        # Extract JSON from markdown code blocks if present
+        if "```json" in content:
+            start = content.find("```json") + 7
+            end = content.find("```", start)
+            content = content[start:end].strip()
+        elif "```" in content:
+            start = content.find("```") + 3
+            end = content.find("```", start)
+            content = content[start:end].strip()
+        
+        return json.loads(content)
     except Exception as e:
         print("ERROR: La IA no devolvió JSON válido.")
         print(response.text)
