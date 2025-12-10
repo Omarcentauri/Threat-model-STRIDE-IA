@@ -3,4 +3,10 @@
 {{diagram}}
 
 ## Amenazas detectadas
-{{threats}}
+{{#threats}}
+### {{threat_id}} — {{description}}
+- Target: {{target}}
+- CIA: {{CIA}}
+- Mitigación: {{mitigation}}
+
+{{/threats}}
