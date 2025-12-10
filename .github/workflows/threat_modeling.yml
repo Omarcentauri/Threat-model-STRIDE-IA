@@ -1,0 +1,59 @@
+name: Threat Modeling Pipeline
+
+on:
+  pull_request:
+
+jobs:
+  pytm_threat_model:
+    name: Generate PyTM Threat Report
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system deps
+        run: sudo apt-get update && sudo apt-get install -y graphviz
+
+      - name: Install pytm
+        run: pip install pytm
+
+      - name: Generate threats.md
+        run: |
+          mkdir -p tm
+          python tm_kultur.py --report docs/basic_template.md > tm/threats.md
+
+      - name: Generate DFD diagram
+        run: python tm_kultur.py --dfd | dot -Tpng -o tm/dfd.png
+
+      - name: Upload PyTM output
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytm-output
+          path: tm/
+
+  ai_analysis:
+    name: AI Threat Classification
+    needs: pytm_threat_model
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download PyTM artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: pytm-output
+
+      - name: Install deps
+        run: pip install requests
+
+      - name: Run AI enrichment
+        env:
+          AI_API_KEY: ${{ secrets.AI_API_KEY }}
+          AI_API_URL: ${{ secrets.AI_API_URL }}
+          AI_MODEL_NAME: ${{ secrets.AI_MODEL_NAME }}
+        run: python threat_modeling/ai_enricher.py
+
+      - name: Upload AI output
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-output
+          path: tm/threats_ai.json
